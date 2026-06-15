@@ -1,0 +1,281 @@
+AI Live2D虚拟角色系统技术架构设计文档
+
+1. 文档信息
+文档名称：AI Live2D虚拟角色系统技术架构设计文档
+版本号：V1.0
+编写日期：2026-06-11
+编写人：产品/研发团队
+适用对象：系统架构师、前端工程师、后端工程师、AI工程师、Live2D工程师、运维工程师
+
+2. 系统总体架构
+系统总体架构采用分层、模块化设计，主要包括：
+用户端 / 接入层
+角色创建工作台
+角色资产生成与驱动层
+实时交互引擎
+统一AI聚合平台接口层
+数据与平台支撑层
+输出能力层
+架构采用 微服务 + AI聚合 + Live2D驱动 + 数据支撑 的设计模式。
+架构图
+参考上传的《AI Live2D虚拟角色交互系统架构图.png》，系统采用左右分布、上中下多层、数据支撑底座的模式。
+
+3. 系统分层设计
+3.1 用户端 / 接入层
+作用：为用户提供多端访问和交互入口
+终端类型：
+Web / H5
+PC 桌面端
+移动端
+直播 / 数字人场景
+功能：
+用户注册 / 登录 / 会话管理
+创建角色 / 编辑角色
+实时互动（文字 / 语音）
+预览和测试角色效果
+技术选型：
+前端框架：Vue3 / React / Tauri (桌面端)
+音视频：WebRTC / Web Audio API
+状态管理：Pinia / Redux
+实时通信：WebSocket / SignalR
+
+3.2 角色创建工作台
+作用：提供角色创建、设定、发布的核心功能
+主要模块：
+角色创建向导（Step Wizard）
+外观设定（性别、年龄、服装、发型、风格）
+声音设定（音色、语速、情绪）
+人格设定（性格、口头禅、背景故事、价值观）
+知识设定（私有/业务知识库）
+能力配置（工具权限 / 插件 / 工作流）
+预览与发布
+技术选型：
+前端渲染：Canvas / WebGL / PixiJS
+后端：Node.js / FastAPI
+AI模型调用：统一AI聚合平台接口
+数据存储：PostgreSQL / Redis
+
+3.3 角色资产生成与驱动层
+3.3.1 角色资产生产
+AI生成角色原画（文生图 / 角色生成模型）
+多表情 / 多动作素材生成
+PSD分层处理 / 自动拆图
+Live2D Cubism建模
+动作参数绑定
+模型发布（moc3 / texture / motion / expression）
+技术选型：
+AI生成：StableDiffusion / Qwen3-VL / 文生图API
+图像处理：Python PIL / OpenCV
+Live2D建模：Cubism SDK
+模型发布：moc3 + texture + motion文件管理
+3.3.2 实时驱动引擎
+Live2D渲染器
+口型同步
+表情驱动
+动作驱动
+空闲待机 / 情绪状态机
+技术选型：
+前端渲染：Live2D WebGL SDK / Unity
+动作驱动：Cubism Motion / 动作参数绑定
+表情驱动：参数映射
+空闲动作 / 状态机：自定义JS状态机
+
+3.4 实时交互引擎
+作用：处理用户输入、人格驱动、意图理解、工具调用、对话生成、TTS输出
+模块：
+ASR语音识别（语音→文字）
+Session管理与对话编排
+人格引擎（人格、风格约束）
+长短期记忆管理
+意图识别 / 上下文理解
+Agent工具调用（业务/插件/API）
+TTS语音合成（文字→语音）
+输出驱动（文字、语音、Live2D动作/表情）
+技术选型：
+ASR：Whisper / PaddleSpeech / 商用ASR
+TTS：Coqui / VITS / Azure TTS
+LLM：Qwen3 / Claude / GPT4
+记忆存储：Redis / PostgreSQL / Vector DB
+实时流程编排：Celery / FastAPI + WebSocket
+动作驱动与表情：Cubism SDK参数绑定
+
+3.5 统一AI聚合平台接口层
+作用：统一调用内部AI模型与外部API
+能力：
+LLM
+文生图 / 角色生成模型
+ASR / TTS
+向量检索 / RAG
+Agent / Workflow
+内容安全 / 审核
+接口设计：
+REST / gRPC
+请求格式统一（JSON）
+权限认证：Token / OAuth
+超时处理与降级机制
+
+3.6 数据与平台支撑层
+用户与角色管理
+角色资产库
+Prompt / Persona配置中心
+记忆库
+知识库
+日志 / 监控 / 埋点
+计费与配额
+权限与多租户
+API网关
+对象存储 / 数据库 / 向量库
+技术选型：
+数据库：PostgreSQL / MongoDB / Redis
+向量库：Milvus / Pinecone / Weaviate
+存储：S3 / MinIO
+日志与监控：ELK / Prometheus / Grafana
+权限管理：Keycloak / 自研RBAC
+API网关：Kong / Nginx / Apisix
+
+3.7 输出能力层
+文字回复
+语音回复
+Live2D动态形象
+可持续人格互动
+可接业务系统 / 客服 / 陪伴 / 数字员工
+
+4. 技术选型汇总
+模块
+技术选型
+说明
+前端
+Vue3 / React / WebGL / PixiJS
+多端渲染、交互UI
+桌面端
+Tauri / Electron
+PC端虚拟角色应用
+AI调用
+REST / gRPC
+统一AI聚合平台接口
+ASR
+Whisper / PaddleSpeech
+语音识别
+TTS
+VITS / Coqui
+语音合成
+LLM
+Qwen3 / Claude
+对话生成
+Live2D
+Cubism SDK
+模型渲染、动作驱动
+数据库
+PostgreSQL / MongoDB
+结构化数据
+缓存/Session
+Redis
+实时会话、短期记忆
+向量数据库
+Milvus / Pinecone
+RAG检索
+对象存储
+S3 / MinIO
+图片、模型、音频
+后端
+Node.js / FastAPI / Python
+接口服务
+消息队列
+RabbitMQ / Kafka
+实时交互、事件驱动
+日志监控
+ELK / Prometheus / Grafana
+系统监控、日志分析
+
+5. 数据流设计
+5.1 用户创建角色
+用户提交角色外观 / 声音 / 人格 / 知识
+角色创建工作台生成配置
+调用AI生成角色原画 / 表情 / 动作
+PSD拆分 → Live2D建模 → 模型发布
+存入角色资产库
+输出可用角色实例
+5.2 用户交互流程
+用户输入文字/语音
+ASR转文字
+对话编排器/Session管理
+人格引擎 + 记忆 + 知识库 + Agent工具调用
+调用 LLM 生成回答
+TTS生成语音
+Live2D驱动动作 / 表情
+输出文字/语音/动态形象
+
+6. 接口设计
+6.1 用户端接口
+POST /api/role/create → 创建角色
+GET /api/role/list → 获取角色列表
+POST /api/role/interact → 用户互动请求
+GET /api/role/preview → 预览角色
+POST /api/role/publish → 发布角色
+6.2 AI接口
+POST /api/ai/llm/query → 文字生成
+POST /api/ai/asr/recognize → 语音转文字
+POST /api/ai/tts/synthesize → 文字转语音
+POST /api/ai/image/generate → 角色原画生成
+POST /api/ai/agent/invoke → 调用工具 / API
+6.3 数据接口
+GET /api/db/role/{id} → 获取角色配置
+POST /api/db/memory/save → 保存记忆
+GET /api/db/memory/query → 查询记忆
+POST /api/db/knowledge/query → 知识检索
+
+7. 部署架构
+前端：静态托管 + CDN
+后端：
+API网关
+微服务（角色管理、会话管理、AI调用）
+消息队列
+调度服务
+AI服务：
+GPU/CPU集群（LLM、ASR、TTS、文生图）
+存储：
+对象存储（S3/MinIO）
+数据库（PostgreSQL / MongoDB）
+向量数据库（Milvus / Pinecone）
+监控：
+Prometheus / Grafana / ELK
+
+8. 系统关键指标
+指标
+描述
+目标
+响应时延
+用户输入到输出
+文字 <2s，语音 <3s
+系统可用率
+平台整体运行
+>99.5%
+并发支持
+实时交互
+1000+ 同时在线角色
+TTS输出
+语音生成
+<500ms
+LLM处理
+文字生成
+<2s
+日志完整率
+日志采集
+100%
+
+9. 安全设计
+数据加密存储
+用户权限控制
+内容安全过滤
+角色人格限制
+模型调用审计
+API访问控制
+
+10. 后续扩展
+多角色互动 / 群聊场景
+视频/3D数字人接入
+高级动作捕捉
+商业化IP管理
+企业多租户扩展
+多语言语音支持
+

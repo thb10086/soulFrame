@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: soulframe-postgres
+    environment:
+      POSTGRES_USER: soulframe
+      POSTGRES_PASSWORD: soulframe
+      POSTGRES_DB: soulframe
+    ports:
+      - "5433:5432"  # 宿主机 5432 已被占用，避让到 5433
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soulframe"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: soulframe-redis
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    container_name: soulframe-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: soulframe
+      MINIO_ROOT_PASSWORD: soulframe123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+volumes:
+  pgdata:
+  miniodata:

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live2D 渲染 + 口型同步 前置验证</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #141414; color: #e4e4e4; font-family: -apple-system, "PingFang SC", sans-serif; overflow: hidden; }
+  #stage { position: fixed; inset: 0; }
+  #panel {
+    position: fixed; top: 16px; left: 16px; width: 320px;
+    background: #1c1c1ccc; border: 1px solid #333; border-radius: 8px;
+    padding: 16px; backdrop-filter: blur(8px); z-index: 10;
+  }
+  h1 { font-size: 15px; margin-bottom: 4px; }
+  p.sub { font-size: 12px; color: #999; margin-bottom: 12px; line-height: 1.5; }
+  button {
+    display: block; width: 100%; margin-bottom: 8px; padding: 8px 12px;
+    background: #2a2a2a; color: #e4e4e4; border: 1px solid #444;
+    border-radius: 6px; font-size: 13px; cursor: pointer; text-align: left;
+  }
+  button:hover { background: #333; border-color: #599ce7; }
+  #status { font-size: 12px; color: #7baf7b; line-height: 1.6; white-space: pre-wrap; }
+  #meter { height: 6px; background: #2a2a2a; border-radius: 3px; margin: 8px 0; overflow: hidden; }
+  #meterFill { height: 100%; width: 0; background: #599ce7; transition: width 0.05s linear; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="panel">
+  <h1>Live2D 前置验证</h1>
+  <p class="sub">验证两件事：① 浏览器渲染官方示例模型；② 用预检生成的 TTS 语音（豆包·vivi）经 WebAudio RMS 驱动口型参数 ParamMouthOpenY。</p>
+  <button id="btnSpeak">▶ 播放 TTS 语音并驱动口型</button>
+  <button id="btnSine">〰 正弦口型测试（无音频）</button>
+  <button id="btnMotion">🎲 播放随机动作</button>
+  <div id="meter"><div id="meterFill"></div></div>
+  <div id="status">加载模型中…</div>
+</div>
+
+<script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi.js@6.5.10/dist/browser/pixi.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pixi-live2d-display@0.4.0/dist/cubism4.min.js"></script>
+<script>
+const MODEL_URL = "https://cdn.jsdelivr.net/gh/guansss/pixi-live2d-display/test/assets/haru/haru_greeter_t03.model3.json";
+const TTS_WAV = "../preflight/output/tts_doubao.wav";
+const MOUTH_PARAM = "ParamMouthOpenY";
+
+const statusEl = document.getElementById("status");
+const meterFill = document.getElementById("meterFill");
+const log = (msg) => { statusEl.textContent = msg; };
+
+let model = null;
+let analyser = null;
+let audioEl = null;
+let mode = "idle"; // idle | speak | sine
+let mouthValue = 0;
+let sineT = 0;
+
+const app = new PIXI.Application({
+  view: document.getElementById("stage"),
+  resizeTo: window,
+  backgroundAlpha: 0,
+  autoStart: true,
+});
+
+(async () => {
+  try {
+    model = await PIXI.live2d.Live2DModel.from(MODEL_URL);
+    app.stage.addChild(model);
+    const fit = () => {
+      const scale = Math.min(window.innerWidth / model.internalModel.width,
+                             window.innerHeight / model.internalModel.height) * 1.15;
+      model.scale.set(scale);
+      model.x = window.innerWidth * 0.58;
+      model.y = window.innerHeight * 0.06;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    log("模型加载成功 ✓\n渲染：PixiJS + pixi-live2d-display (Cubism 4)\n点击按钮验证口型驱动。");
+  } catch (e) {
+    log("模型加载失败：" + e.message + "\n请检查网络（模型与SDK走CDN）。");
+  }
+
+  // 口型驱动：在每帧模型更新后写入参数（LOW 优先级保证在动作更新之后执行）
+  app.ticker.add(() => {
+    if (!model) return;
+    if (mode === "speak" && analyser) {
+      const buf = new Float32Array(analyser.fftSize);
+      analyser.getFloatTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+      const rms = Math.sqrt(sum / buf.length);
+      const target = Math.min(1, rms * 9);          // 增益
+      mouthValue += (target - mouthValue) * 0.5;    // 平滑
+    } else if (mode === "sine") {
+      sineT += app.ticker.deltaMS / 1000;
+      mouthValue = (Math.sin(sineT * 8) + 1) / 2;
+      if (sineT > 4) { mode = "idle"; sineT = 0; log("正弦口型测试结束 ✓ 参数通路正常。"); }
+    } else {
+      mouthValue *= 0.8;
+    }
+    meterFill.style.width = (mouthValue * 100).toFixed(0) + "%";
+    try {
+      model.internalModel.coreModel.setParameterValueById(MOUTH_PARAM, mouthValue);
+    } catch (_) { /* 参数名不存在时忽略 */ }
+  }, null, PIXI.UPDATE_PRIORITY.LOW);
+})();
+
+document.getElementById("btnSpeak").onclick = async () => {
+  try {
+    if (!audioEl) {
+      audioEl = new Audio(TTS_WAV);
+      audioEl.crossOrigin = "anonymous";
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = ctx.createMediaElementSource(audioEl);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      src.connect(analyser);
+      analyser.connect(ctx.destination);
+      audioEl.onended = () => { mode = "idle"; log("播放结束 ✓ 口型随语音能量驱动成功。"); };
+      audioEl.onerror = () => { mode = "idle"; log("音频加载失败：请先跑预检生成 tts_doubao.wav，\n并用 python3 -m http.server 从项目根目录启动服务。"); };
+    }
+    audioEl.currentTime = 0;
+    await audioEl.play();
+    mode = "speak";
+    log("播放中… 观察嘴部随语音开合。");
+  } catch (e) {
+    log("播放失败：" + e.message);
+  }
+};
+
+document.getElementById("btnSine").onclick = () => {
+  mode = "sine"; sineT = 0;
+  log("正弦口型测试中（4秒）…");
+};
+
+document.getElementById("btnMotion").onclick = () => {
+  if (model) { model.motion(undefined); log("已触发随机动作。"); }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# ---- secrets ----
+.env
+.env.*
+!.env.example
+
+# ---- python (backend) ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ---- node (frontend) ----
+node_modules/
+frontend/dist/
+dist/
+.vite/
+*.tsbuildinfo
+
+# ---- runtime / generated data (large, rebuildable) ----
+# AI 生成的 3D 模型产物 + UAL 第三方源 + 运行时数据库/背景图
+storage/
+backend/files/
+logs/
+*.log
+*.pid
+
+# ---- tooling caches ----
+.playwright-cli/
+
+# ---- os / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,213 @@
+{
+  "base_url": "https://agentllm.linkyun.co",
+  "ran_at": "2026-06-11 15:03:38",
+  "results": {
+    "llm": {
+      "check": "llm_streaming",
+      "ok": true,
+      "models": [
+        {
+          "model": "linkyun-default",
+          "ok": true,
+          "ttft_ms": 8654,
+          "total_ms": 9913,
+          "chars": 27,
+          "sample": "哈喽~我是灵犀，你的元气小伙伴哟！(๑•̀ㅂ•́)و✧"
+        },
+        {
+          "model": "deepseek-v4-flash",
+          "ok": true,
+          "ttft_ms": 3671,
+          "total_ms": 4978,
+          "chars": 32,
+          "sample": "嗨！我是灵犀~一个爱笑爱玩的小话唠，能和你聊天超开心哒(≧▽≦)"
+        },
+        {
+          "model": "qwen3.6-flash-2026-04-16",
+          "ok": true,
+          "ttft_ms": 3243,
+          "total_ms": 3243,
+          "chars": 39,
+          "sample": "嗨呀！我是灵犀，你的二次元好朋友~ 很高兴认识你，以后请多关照啦！(≧∇≦)ﾉ"
+        },
+        {
+          "model": "MiniMax-M2.7-highspeed",
+          "ok": true,
+          "ttft_ms": 2825,
+          "total_ms": 4913,
+          "chars": 106,
+          "sample": "<think>\n用户想让我用一句话打招呼并介绍自己。我是「灵犀」，一个温柔、活泼的二次元虚拟角色。我需要简短自然地回应，像朋友聊天一样。\n</think>\n\n嘿"
+        },
+        {
+          "model": "M2-her",
+          "ok": true,
+          "ttft_ms": 1929,
+          "total_ms": 2747,
+          "chars": 8,
+          "sample": "你好呀，我叫灵犀"
+        },
+        {
+          "model": "claude-sonnet",
+          "ok": true,
+          "ttft_ms": 5328,
+          "total_ms": 6322,
+          "chars": 55,
+          "sample": "你好！我是 Claude，一个由 Anthropic 构建的 AI 助手，很高兴能帮你解决编程和软件工程问题！"
+        }
+      ],
+      "fastest_ttft": 1929
+    },
+    "tts": {
+      "check": "tts_streaming",
+      "ok": true,
+      "engines": [
+        {
+          "engine": "doubao-tts",
+          "voice": "zh_female_vv_uranus_bigtts",
+          "ok": true,
+          "first_chunk_ms": 2803,
+          "total_ms": 4114,
+          "bytes": 158908,
+          "file": "/Users/tangcuyu/Documents/SoulFrame/preflight/output/tts_doubao.wav"
+        },
+        {
+          "engine": "minimax-t2a",
+          "ok": false,
+          "error": "ReadTimeout: The read operation timed out"
+        }
+      ]
+    },
+    "asr": {
+      "check": "asr_realtime",
+      "model": "fun-asr-realtime",
+      "ok": true,
+      "recognized": "你好呀，我是林夕，很高兴认识你。",
+      "expected": "你好呀我是灵犀很高兴认识你",
+      "char_recall": 0.85,
+      "tail_latency_ms": 5502,
+      "partials": 6
+    },
+    "pipeline": {
+      "check": "voice_pipeline",
+      "ok": true,
+      "vad_budget_ms": 400,
+      "asr_tail_ms": 5502,
+      "attempts": [
+        {
+          "model": "M2-her",
+          "ok": true,
+          "llm_ttft_ms": 3211,
+          "llm_first_sentence_ms": 3213,
+          "first_sentence": "（眨眨眼）累坏了吧？来，说",
+          "tts_first_byte_ms": 1836,
+          "reply_path_ms": 5049,
+          "estimated_e2e_ms": 10951,
+          "full_reply": "（眨眨眼）累坏了吧？来，说说今天发生的事，我帮你分析分析？（轻轻歪头）"
+        },
+        {
+          "model": "qwen3.6-flash-2026-04-16",
+          "ok": true,
+          "llm_ttft_ms": 4980,
+          "llm_first_sentence_ms": 4982,
+          "first_sentence": "摸摸头～辛苦啦！",
+          "tts_first_byte_ms": 2140,
+          "reply_path_ms": 7122,
+          "estimated_e2e_ms": 13024,
+          "full_reply": "摸摸头～辛苦啦！☁️ 想想今晚软乎乎的床铺，还有冰镇快乐水，瞬间回血对不对？✨ 快躺平休息吧，我在云端陪你哦～(๑>؂<๑)"
+        }
+      ],
+      "best_model": "M2-her",
+      "best_e2e_ms": 10951,
+      "target_3000ms": false
+    },
+    "realtime": {
+      "check": "realtime_s2s",
+      "model": "qwen3-omni-flash-realtime",
+      "ok": true,
+      "first_audio_ms": 5871,
+      "first_text_ms": 5553,
+      "total_ms": 7537,
+      "audio_bytes": 245760,
+      "transcript": "你好呀，灵犀，能遇见你真好，今天想聊点什么呢？"
+    },
+    "rag": {
+      "check": "rag_prereq",
+      "embedding_ok": false,
+      "rerank_ok": false,
+      "ok": false,
+      "embeddings": [
+        {
+          "model": "text-embedding-3-small",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "text-embedding-v4",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "text-embedding-v3",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "bge-m3",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "embedding-default",
+          "ok": false,
+          "error": "HTTP 404"
+        }
+      ],
+      "rerank": [
+        {
+          "model": "gte-rerank",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "bge-reranker-v2-m3",
+          "ok": false,
+          "error": "HTTP 404"
+        },
+        {
+          "model": "rerank-default",
+          "ok": false,
+          "error": "HTTP 404"
+        }
+      ]
+    },
+    "image": {
+      "check": "image_generation",
+      "ok": true,
+      "models": [
+        {
+          "model": "gpt-image-2",
+          "ok": false,
+          "error": "HTTP 503: {\"error\":{\"message\":\"分组 Claude Code专属、official_Claude、官转克劳德1、官转克劳德2、官转克劳德3、特价 Claude Code、直连克劳德 下模型 gpt-image-2 无可用渠道（distributor） (request id: 20260611150017293398428Pr6YSqx7)\",\"type\":\"new_api_error\""
+        },
+        {
+          "model": "linkyun-image-default",
+          "ok": true,
+          "total_ms": 11145,
+          "bytes": 1632532,
+          "file": "/Users/tangcuyu/Documents/SoulFrame/preflight/output/character_linkyun-image-default.png"
+        }
+      ]
+    },
+    "net": {
+      "check": "network_baseline",
+      "ok": true,
+      "cold_rtt_ms": 2184,
+      "warm_rtt_ms": 1353,
+      "warm_rtts": [
+        1414,
+        1259,
+        1387
+      ]
+    }
+  }
+}
